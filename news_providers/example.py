@@ -7,7 +7,6 @@
 
 from datetime import datetime
 
-
 def retrieve(last_updated=datetime.now()):
     """ Simulates news crawling and returns a list of sample tweets to test the application. """
     print('Retrieving sample news since {}.'.format(last_updated))

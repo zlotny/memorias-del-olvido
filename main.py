@@ -9,19 +9,24 @@
 from os import getenv
 from os.path import join, dirname
 from time import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
+import traceback
 
 import tweepy
 from tweepy.error import TweepError
 from dotenv import load_dotenv
 
-from news_providers import example
+from news_providers import elpais, elmundo
 
+# Environment loading
 ENV_FILE = '.env'
-DEFAULT_CHECK_DELAY = 3600
-NEWS_PROVIDERS = [example]
-
 load_dotenv(join(dirname(__file__), ENV_FILE))
+
+# Environment configuration
+DEFAULT_CHECK_DELAY = 3600
+NEWS_PROVIDERS = [elpais, elmundo]
+DEBUG_MODE = getenv('DEBUG_MODE').lower() == "true" or False
+DELETE_ALL_AT_START = getenv('DELETE_ALL_AT_START').lower() == "true" or False
 
 
 def main():
@@ -43,22 +48,47 @@ def main():
         print('''Couldn't perform authentication. Check your twitter keys and secrets.''')
         return
 
-    print('Logged in as {}!'.format(api.me().screen_name))
+    if DEBUG_MODE:
+        print('Logged in as {}!'.format(api.me().screen_name))
+
+    if DELETE_ALL_AT_START:
+        for status in tweepy.Cursor(api.user_timeline).items():
+            try:
+                api.destroy_status(status.id)
+            except:
+                print("Failed to delete: {}".format(status.id))
 
     # Setup check-tweets iteration
-    last_checked = datetime.now()
+    last_checked = datetime.now() - timedelta(days=5)
     to_tweet = list()
     tweet_counter = 0
 
     while True:
         # Retrieve tweets from providers
         for provider in NEWS_PROVIDERS:
-            to_tweet.extend(provider.retrieve(last_checked))
+            new_tweets = list()
+
+            try:
+                new_tweets = provider.retrieve(last_checked)
+            except:
+                print("There was an error retrieving the last tweets. Ignoring the site: {}".format(provider.SITE))
+                if DEBUG_MODE:
+                    traceback.print_exc()
+
+            to_tweet.extend(new_tweets)
 
         # Process tweets
         for tweet in to_tweet:
             try:
-                api.update_status(tweet)
+                if DEBUG_MODE:
+                    print("""
+                        Tweet:
+                        {}
+
+
+                    """.format(tweet))
+                else:
+                    api.update_status(tweet)
                 tweet_counter += 1
             except TweepError as error:
                 print('Found an error tweeting. Error message was: {}'.format(error.response.text))
