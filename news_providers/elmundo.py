@@ -31,7 +31,6 @@ def retrieve(last_updated=datetime.now()):
         # If the article is newer it should go on until it finds one that's not
 
         link = CSSSelector('article .ue-c-cover-content__link')(article)[0].get('href')
-        print(link)
 
         if "promo" in link.lower() or "follow" in link.lower():
             continue

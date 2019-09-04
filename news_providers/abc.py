@@ -10,8 +10,8 @@ from lxml import html
 from lxml.cssselect import CSSSelector
 import requests
 
-URL = 'https://elpais.com/tag/alzheimer'
-SITE = 'elpais.com'
+URL = 'https://www.abc.es/salud/enfermedades/alzheimer/'
+SITE = 'abc.es'
 
 
 def retrieve(last_updated=datetime.now()):
@@ -21,27 +21,29 @@ def retrieve(last_updated=datetime.now()):
     to_ret = list()
 
     # Get all the content from the last page of the site's news
-    page = requests.get(URL)
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(requests.get(URL).content)
 
     # Get list of articles
-    articles = CSSSelector('article.articulo')(tree)
+    articles = CSSSelector('article:not(.destacado)')(tree)
 
     for article in articles:
         # For each article parse the date on the metadata and compare to the last update of the bot.
         # If the article is newer it should go on until it finds one that's not
 
-        news_date = CSSSelector('article.articulo .articulo-metadatos time')(article)[0].get('datetime')
-        news_datetime = datetime.strptime(news_date, '%Y-%m-%dT%H:%M:%S')
+        link = CSSSelector('article .titular a')(article)[0].get('href')
+
+        news_date = CSSSelector('article time')(article)[0].get('datetime').split("+")[0]
+        news_datetime = datetime.strptime(news_date, '%d/%m/%YT%H:%M:%S')
 
         if news_datetime < last_updated:
             break
 
         # Get the useful parts of each article to compose a tweet.
-        header = CSSSelector('article.articulo .articulo-titulo a')(article)[0]
-        author = CSSSelector('article.articulo .articulo-metadatos .autor-nombre a')(article)[0].text
-        title = header.text
-        link = header.get('href')
+        title_raw = CSSSelector('article .titular a')(article)[0].text
+        author_raw = CSSSelector('article .firma')(article)[0].text
+
+        title = ' '.join(title_raw.split())
+        author = ' '.join(author_raw.split())
 
         # Compose a tweet with the article's information
         tweet = """

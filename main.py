@@ -16,7 +16,7 @@ import tweepy
 from tweepy.error import TweepError
 from dotenv import load_dotenv
 
-from news_providers import elpais, elmundo
+from news_providers import elpais, elmundo, abc
 
 # Environment loading
 ENV_FILE = '.env'
@@ -24,7 +24,7 @@ load_dotenv(join(dirname(__file__), ENV_FILE))
 
 # Environment configuration
 DEFAULT_CHECK_DELAY = 3600
-NEWS_PROVIDERS = [elpais, elmundo]
+NEWS_PROVIDERS = [abc, elpais, elmundo]
 DEBUG_MODE = getenv('DEBUG_MODE').lower() == "true" or False
 DELETE_ALL_AT_START = getenv('DELETE_ALL_AT_START').lower() == "true" or False
 
@@ -59,7 +59,11 @@ def main():
                 print("Failed to delete: {}".format(status.id))
 
     # Setup check-tweets iteration
-    last_checked = datetime.now() - timedelta(days=5)
+    last_checked = datetime.now()
+
+    if DEBUG_MODE:
+        last_checked -= timedelta(days=10)
+
     to_tweet = list()
     tweet_counter = 0
 
@@ -70,7 +74,7 @@ def main():
 
             try:
                 new_tweets = provider.retrieve(last_checked)
-            except:
+            except IndexError:
                 print("There was an error retrieving the last tweets. Ignoring the site: {}".format(provider.SITE))
                 if DEBUG_MODE:
                     traceback.print_exc()
