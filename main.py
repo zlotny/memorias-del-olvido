@@ -24,7 +24,7 @@ load_dotenv(join(dirname(__file__), ENV_FILE))
 
 # Environment configuration
 DEFAULT_CHECK_DELAY = 3600
-NEWS_PROVIDERS = [rtve]
+NEWS_PROVIDERS = [elpais, elmundo, abc, rtve]
 DEBUG_MODE = getenv('DEBUG_MODE').lower() == "true" or False
 DELETE_ALL_AT_START = getenv('DELETE_ALL_AT_START').lower() == "true" or False
 

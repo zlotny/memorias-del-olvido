@@ -1,2 +1,4 @@
 tweepy==3.8.0
 python-dotenv==0.10.3
+lxml==4.4.1
+cssselect==1.1.0
