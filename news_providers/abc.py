@@ -1,5 +1,5 @@
 """
-    News provider for the site elpais.com
+    News provider for the site abc.es
 
     Checks specifically the Alzheimer tag
 """
@@ -50,7 +50,7 @@ def retrieve(last_updated=datetime.now()):
                 {title}
 
                 Autor/a: {author}
-                Enlace: https:{link} ({site})
+                Enlace: {link} ({site})
                 """.format(title=title, author=author, link=link, site=SITE)
 
         to_ret.append(dedent(tweet))

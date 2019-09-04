@@ -16,7 +16,7 @@ import tweepy
 from tweepy.error import TweepError
 from dotenv import load_dotenv
 
-from news_providers import elpais, elmundo, abc
+from news_providers import elpais, elmundo, abc, rtve
 
 # Environment loading
 ENV_FILE = '.env'
@@ -24,7 +24,7 @@ load_dotenv(join(dirname(__file__), ENV_FILE))
 
 # Environment configuration
 DEFAULT_CHECK_DELAY = 3600
-NEWS_PROVIDERS = [abc, elpais, elmundo]
+NEWS_PROVIDERS = [rtve]
 DEBUG_MODE = getenv('DEBUG_MODE').lower() == "true" or False
 DELETE_ALL_AT_START = getenv('DELETE_ALL_AT_START').lower() == "true" or False
 
